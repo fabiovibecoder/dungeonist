@@ -2,24 +2,23 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
 
 interface CartItem {
   id: string;
   name: string;
   quantity: number;
   previewUrl: string;
+  filePath: string;
 }
 
 export default function PainelCliente() {
-  const [items, setItems] = useState<CartItem[]>([
-    { id: '1', name: 'Carta_Guerreiro_Fogo.png', quantity: 4, previewUrl: 'https://placehold.co/300x420/FF6A2A/4B2E2A?text=Guerreiro' },
-    { id: '2', name: 'Carta_Magia_Cura.png', quantity: 2, previewUrl: 'https://placehold.co/300x420/FF9A4D/4B2E2A?text=Magia' }
-  ]);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const totalCards = items.reduce((acc, item) => acc + item.quantity, 0);
   const printCost = totalCards * 0.60;
   
-  // Cálculo de frete Impresso Módico simulado
   let shippingCost = 13.50;
   const weightGrams = totalCards * 2.5;
   if (weightGrams > 200 && weightGrams <= 500) shippingCost = 18.00;
@@ -27,6 +26,45 @@ export default function PainelCliente() {
   else if (weightGrams > 1000) shippingCost = 32.00;
 
   const grandTotal = printCost + shippingCost;
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const newItems: CartItem[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `uploads/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('card-uploads')
+        .upload(filePath, file);
+
+      if (error) {
+        alert(`Erro ao enviar ${file.name}: ${error.message}`);
+        continue;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('card-uploads')
+        .getPublicUrl(filePath);
+
+      newItems.push({
+        id: fileName,
+        name: file.name,
+        quantity: 1,
+        previewUrl: publicUrlData.publicUrl,
+        filePath: filePath,
+      });
+    }
+
+    setItems((prev) => [...prev, ...newItems]);
+    setUploading(false);
+  };
 
   const handleQuantityChange = (id: string, delta: number) => {
     setItems(items.map(item => {
@@ -38,13 +76,13 @@ export default function PainelCliente() {
     }));
   };
 
-  const handleRemove = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
+  const handleRemove = async (item: CartItem) => {
+    await supabase.storage.from('card-uploads').remove([item.filePath]);
+    setItems(items.filter(i => i.id !== item.id));
   };
 
   return (
     <div style={{ backgroundColor: '#4B2E2A', color: '#F6F1EA' }} className="min-h-screen font-sans">
-      {/* Header */}
       <header className="border-b border-[#FF6A2A]/20 bg-[#4B2E2A]/90 sticky top-0 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -58,7 +96,6 @@ export default function PainelCliente() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-8">
-        {/* Lista de Arquivos Enviados */}
         <div className="md:col-span-2 space-y-6">
           <div className="bg-[#38211E] p-6 rounded-2xl border border-[#FF6A2A]/30 shadow-xl space-y-4">
             <div className="flex justify-between items-center">
@@ -68,22 +105,34 @@ export default function PainelCliente() {
               </span>
             </div>
 
-            {/* Botão de Upload Fictício */}
-            <div className="border-2 border-dashed border-[#FF6A2A]/40 rounded-xl p-8 text-center bg-[#4B2E2A]/50 hover:bg-[#4B2E2A] transition cursor-pointer">
-              <p className="text-sm text-[#FFD0A3] font-medium">Arraste seus arquivos aqui ou clique para enviar</p>
-              <span className="text-xs text-[#F6F1EA]/60 mt-1 block">Suporta PNG, JPG ou PDF (com sangria recomendada)</span>
-            </div>
+            <label className="border-2 border-dashed border-[#FF6A2A]/40 rounded-xl p-8 text-center bg-[#4B2E2A]/50 hover:bg-[#4B2E2A] transition cursor-pointer block">
+              <input 
+                type="file" 
+                multiple 
+                accept="image/png, image/jpeg, application/pdf" 
+                onChange={handleFileUpload} 
+                disabled={uploading} 
+                className="hidden" 
+              />
+              <p className="text-sm text-[#FFD0A3] font-medium">
+                {uploading ? 'Enviando arquivos para o Supabase...' : 'Clique para selecionar ou solte seus arquivos aqui'}
+              </p>
+              <span className="text-xs text-[#F6F1EA]/60 mt-1 block">Suporta PNG, JPG ou PDF</span>
+            </label>
 
-            {/* Grid de Itens */}
             <div className="space-y-3 pt-2">
               {items.map((item) => (
                 <div key={item.id} className="bg-[#4B2E2A] p-4 rounded-xl border border-[#FF6A2A]/20 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-16 relative rounded bg-slate-900 overflow-hidden shrink-0 border border-[#FF6A2A]/30">
-                      <Image src={item.previewUrl} alt={item.name} fill className="object-cover" />
+                    <div className="w-12 h-16 relative rounded bg-slate-900 overflow-hidden shrink-0 border border-[#FF6A2A]/30 flex items-center justify-center">
+                      {item.name.endsWith('.pdf') ? (
+                        <span className="text-xs font-bold text-[#FF6A2A]">PDF</span>
+                      ) : (
+                        <Image src={item.previewUrl} alt={item.name} fill className="object-cover" />
+                      )}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-sm text-[#F6F1EA]">{item.name}</h4>
+                      <h4 className="font-semibold text-sm text-[#F6F1EA] truncate max-w-[200px]">{item.name}</h4>
                       <span className="text-xs text-[#FFD0A3]">Unidade: R$ 0,60</span>
                     </div>
                   </div>
@@ -94,18 +143,17 @@ export default function PainelCliente() {
                       <span className="px-2 text-sm font-bold text-[#F6F1EA]">{item.quantity}</span>
                       <button onClick={() => handleQuantityChange(item.id, 1)} className="px-3 py-1 text-[#FFD0A3] hover:text-white">+</button>
                     </div>
-                    <button onClick={() => handleRemove(item.id)} className="text-xs text-red-400 hover:text-red-300 px-2 py-1">Remover</button>
+                    <button onClick={() => handleRemove(item)} className="text-xs text-red-400 hover:text-red-300 px-2 py-1">Remover</button>
                   </div>
                 </div>
               ))}
-              {items.length === 0 && (
+              {items.length === 0 && !uploading && (
                 <p className="text-center text-sm text-[#FFD0A3] py-8">Nenhuma carta adicionada ao pedido ainda.</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Resumo do Pedido & Checkout */}
         <div className="space-y-6">
           <div className="bg-[#38211E] p-6 rounded-2xl border border-[#FF6A2A]/30 shadow-xl space-y-4 sticky top-24">
             <h3 className="text-lg font-bold text-[#F6F1EA]">Resumo do Pedido</h3>
