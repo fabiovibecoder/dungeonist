@@ -130,7 +130,7 @@ export default function PainelCliente() {
                       {item.name.endsWith('.pdf') ? (
                         <span className="text-xs font-bold text-[#FF6A2A]">PDF</span>
                       ) : (
-                        <Image src={item.previewUrl} alt={item.name} fill className="object-cover" />
+                        <img src={item.previewUrl} alt={item.name} className="w-12 h-16 object-cover rounded" />
                       )}
                     </div>
                     <div>
