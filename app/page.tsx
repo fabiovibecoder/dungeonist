@@ -29,7 +29,7 @@ export default function Home() {
       <header className="border-b border-[#FF6A2A]/20 bg-[#4B2E2A]/90 sticky top-0 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 relative rounded-full overflow-hidden border border-[#FF6A2A]">
+            <div className="w-16 h-16 relative rounded-full overflow-hidden border border-[#FF6A2A]">
               <Image 
                 src="/logo.png" 
                 alt="Dungeonist Logo" 
@@ -39,9 +39,6 @@ export default function Home() {
             </div>
             <div>
               <span className="text-2xl font-black tracking-wider text-[#FF6A2A]">DUNGEONIST</span>
-              <span className="text-[10px] bg-[#FF6A2A]/10 text-[#FFD0A3] px-2 py-0.5 rounded block border border-[#FF6A2A]/20">
-                63.5 x 88.9 mm
-              </span>
             </div>
           </div>
           <div className="flex gap-4">
