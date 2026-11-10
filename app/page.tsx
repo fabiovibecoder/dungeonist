@@ -39,9 +39,6 @@ export default function Home() {
             </div>
             <div>
               <span className="text-2xl font-black tracking-wider text-[#FF6A2A]">DUNGEONIST</span>
-              <span className="text-[10px] bg-[#FF6A2A]/10 text-[#FFD0A3] px-2 py-0.5 rounded block border border-[#FF6A2A]/20">
-                63.5 x 88.9 mm
-              </span>
             </div>
           </div>
           <div className="flex gap-4">
