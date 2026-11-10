@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 interface CartItem {
   id: string;
