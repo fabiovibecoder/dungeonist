@@ -49,9 +49,11 @@ export default function PainelCliente() {
         continue;
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('card-uploads')
-        .getPublicUrl(filePath);
+  const { data: publicUrlData } = supabase.storage
+  .from('card-uploads')
+  .getPublicUrl(filePath);
+
+  const previewUrl = publicUrlData.publicUrl;
 
       newItems.push({
         id: fileName,
