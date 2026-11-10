@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, ChangeEvent } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -28,10 +28,10 @@ export default function PainelCliente() {
 
     for (const file of files) {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36.substring(2))}.${fileExt}`;
+      const randomStr = Math.random().toString(36).substring(2);
+      const fileName = `${Date.now()}_${randomStr}.${fileExt}`;
       const filePath = `uploads/${fileName}`;
 
-      // Cria um preview local instantâneo para evitar qualquer erro de renderização
       const localPreviewUrl = URL.createObjectURL(file);
 
       const { error } = await supabase.storage
