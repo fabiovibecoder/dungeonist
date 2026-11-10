@@ -54,7 +54,7 @@ export default function Home() {
               </p>
             </div>
             <div className="text-right">
-              <span class="text-xs text-slate-400 uppercase tracking-wider block">Preço por carta</span>
+              <span className="text-xs text-slate-400 uppercase tracking-wider block">Preço por carta</span>
               <span className="text-3xl font-extrabold text-amber-400">R$ 0,60</span>
             </div>
           </div>
